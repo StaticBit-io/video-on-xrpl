@@ -6,37 +6,36 @@
     "wss://testnet.xrpl-labs.com"
   ],
   "explorer": "https://testnet.xrpl.org",
-  "account": "rBVhQHqZXAY1t4Z4WyqJnWq948E5gXwMUB",
-  "accountUrl": "https://testnet.xrpl.org/accounts/rBVhQHqZXAY1t4Z4WyqJnWq948E5gXwMUB",
+  "account": "rU8KhYn2Vwpf3tzequSMiJQkhX9ZKwTN3L",
+  "accountUrl": "https://testnet.xrpl.org/accounts/rU8KhYn2Vwpf3tzequSMiJQkhX9ZKwTN3L",
   "video": {
-    "title": "Big Buck Bunny",
-    "credit": "Blender Foundation, CC BY 3.0",
-    "source": "test-videos.co.uk, re-encoded to 360p",
-    "mimeCodec": "video/mp4; codecs=\"avc1.4D401F\"",
-    "hasAudio": false,
-    "width": 640,
-    "height": 360,
-    "durationSeconds": 10,
-    "bytes": 704445,
-    "sha256": "D5514361DFC663FB95AF268B422CA6F3258A7F2147C231B21F60017784F77F70",
-    "segments": 10
+    "title": "I Love AI",
+    "credit": "StaticBit, 2026",
+    "mimeCodec": "video/mp4; codecs=\"avc1.4D401F,mp4a.40.2\"",
+    "hasAudio": true,
+    "width": 854,
+    "height": 480,
+    "durationSeconds": 9,
+    "bytes": 636375,
+    "sha256": "12F0927539CCE19E8B04698C249D7BDAE104CAEADCBA6DB129E226CC974461BD",
+    "segments": 9
   },
   "ledger": {
     "chunkSize": 1019,
-    "transactions": 692,
-    "startSequence": 20182741,
-    "firstLedger": 20182746,
-    "lastLedger": 20182758,
+    "transactions": 625,
+    "startSequence": 20184071,
+    "firstLedger": 20184074,
+    "lastLedger": 20184086,
     "ledgersUsed": 5,
     "ticketed": true,
-    "submitMinutes": 0,
+    "submitMinutes": 0.7,
     "feeDropsPerTx": 12,
-    "feeBurnedXrp": 0,
-    "readBackSeconds": 2.42,
-    "requiredTxPerSecond": 69.2
+    "feeBurnedXrp": 0.007548,
+    "readBackSeconds": 2.45,
+    "requiredTxPerSecond": 69.4
   },
   "verification": {
-    "rebuiltBytes": 704445,
+    "rebuiltBytes": 636375,
     "byteForByteMatch": true
   }
 }

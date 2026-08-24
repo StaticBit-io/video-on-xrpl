@@ -42,9 +42,12 @@ async function boot() {
   $('start').addEventListener('click', start, { once: true });
 
   // Say up front if this browser cannot do it, rather than failing on the first append.
+  $('overlay-title').textContent = manifest.video.title;
+
   const supported = 'MediaSource' in window && MediaSource.isTypeSupported(manifest.video.mimeCodec);
   $('overlay-note').textContent = supported
-    ? `${manifest.video.segments} fragments · ${manifest.ledger.transactions} transactions · ${manifest.video.durationSeconds}s`
+    ? `${manifest.video.segments} fragments · ${manifest.ledger.transactions} transactions · ` +
+      `${manifest.video.durationSeconds}s${manifest.video.hasAudio ? ' · with sound' : ''}`
     : 'This browser has no MediaSource support, so it cannot decode a stream assembled in the page.';
   $('start').disabled = !supported;
 }
@@ -52,6 +55,10 @@ async function boot() {
 async function start() {
   state.started = true;
   $('overlay').hidden = true;
+
+  // The click that got us here is the gesture browsers require before a video may make
+  // noise, so a clip with a soundtrack can start unmuted.
+  $('video').muted = !state.manifest.video.hasAudio;
 
   state.client = new LedgerClient(state.manifest.endpoints, renderNetStatus);
   state.streamer = new Streamer($('video'), state.manifest.video.mimeCodec, state.manifest.video.durationSeconds);

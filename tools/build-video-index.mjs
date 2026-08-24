@@ -13,11 +13,17 @@ import { join } from 'node:path';
 
 import { chunkRangeFor } from '../js/offsets.mjs';
 
-const [, , mapPath, datasetPath, outDir = 'data'] = process.argv;
+const [, , mapPath, datasetPath, outDir = 'data', ...rest] = process.argv;
 if (!mapPath || !datasetPath) {
-  console.error('usage: node tools/build-video-index.mjs <payload-map.json> <run-dataset.json> [outDir]');
+  console.error('usage: node tools/build-video-index.mjs <payload-map.json> <run-dataset.json> [outDir] [--title T] [--credit C]');
   process.exit(1);
 }
+
+/** Title and credit describe the clip, not the pipeline, so they come from the command line. */
+const flag = (name, fallback) => {
+  const at = rest.indexOf(`--${name}`);
+  return at >= 0 && rest[at + 1] ? rest[at + 1] : fallback;
+};
 
 const map = JSON.parse(readFileSync(mapPath, 'utf8'));
 const run = JSON.parse(readFileSync(datasetPath, 'utf8'));
@@ -76,13 +82,12 @@ const manifest = {
   account: run.Account,
   accountUrl: run.AccountUrl,
   video: {
-    title: 'Big Buck Bunny',
-    credit: 'Blender Foundation, CC BY 3.0',
-    source: 'test-videos.co.uk, re-encoded to 360p',
+    title: flag('title', 'Untitled clip'),
+    credit: flag('credit', ''),
     mimeCodec: map.mimeCodec,
     hasAudio: map.hasAudio,
-    width: 640,
-    height: 360,
+    width: map.width || 854,
+    height: map.height || 480,
     durationSeconds,
     bytes: map.payloadBytes,
     sha256: map.payloadSha256,

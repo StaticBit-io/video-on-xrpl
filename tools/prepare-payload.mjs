@@ -27,6 +27,15 @@ const source = readFileSync(inputPath);
 const { init, fragments } = splitFragmented(source);
 const sha256 = (buf) => createHash('sha256').update(buf).digest('hex').toUpperCase();
 
+/** Frame size from the video track header (tkhd), as 16.16 fixed-point numbers. */
+function frameSize(buffer) {
+  const at = buffer.indexOf(Buffer.from('tkhd', 'latin1'));
+  if (at < 0) return {};
+  const version = buffer.readUInt8(at + 4);
+  const end = at + 4 + (version === 1 ? 96 : 84);   // width and height are the last two fields
+  return { width: Math.round(buffer.readUInt32BE(end - 8) / 65536), height: Math.round(buffer.readUInt32BE(end - 4) / 65536) };
+}
+
 /** avc1.PPCCLL — the codec string MediaSource checks before it accepts a byte. */
 function codecString(buffer) {
   const at = buffer.indexOf(Buffer.from('avcC', 'latin1'));

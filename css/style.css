@@ -123,6 +123,14 @@ main { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
 /* Once the clip is buffered the overlay must not swallow clicks meant for the controls. */
 .overlay.is-done { background: linear-gradient(180deg, rgba(14,13,12,0.35), rgba(14,13,12,0.7)); }
 
+.overlay-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #f1ece6;
+  letter-spacing: -0.01em;
+}
+
 .overlay-note { margin: 0; font-size: 0.82rem; color: #b9b3ac; font-family: var(--mono); max-width: 46ch; }
 
 /* ─── gauges ─── */
