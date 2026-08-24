@@ -1,6 +1,7 @@
 # Video, streamed out of the XRP Ledger
 
-Eight seconds of 480p video **with sound** live inside the memo fields of 625 XRPL transactions.
+Eight seconds of 480p video **with sound** live inside the memo fields of 625 transactions on
+**XRPL mainnet**.
 This page pulls them back fragment by fragment and feeds them to the browser's decoder **while the
 clip plays** — not a download that finishes and then starts, but a stream whose source happens to
 be a blockchain.
@@ -25,12 +26,17 @@ problem once transactions stopped waiting for each other.
 |---|---|
 | Clip | *I Love AI*, 854×480, 8 s, H.264 + AAC, `avc1.4D401F,mp4a.40.2` |
 | Payload | 636,375 bytes → 625 transactions of 1,019 bytes |
-| Written in | **42 seconds**, across **5 ledgers**, 0 failures |
-| Fees | 0.007548 XRP |
-| Network | XRPL Testnet |
+| Network | **XRPL Mainnet** |
+| Account | [rU1A1kuVpYHk3TZYWJxVtPUc94aXyteizy](https://livenet.xrpl.org/accounts/rU1A1kuVpYHk3TZYWJxVtPUc94aXyteizy) |
+| Written in | 2.8 minutes, across 44 ledgers, 0 failures |
+| Fees | **0.0075 XRP** — under two cents |
 | Playback needs | 69.4 transactions per second, sustained |
-| Measured read rate | ~115 tx/s, 1.7× faster than playback consumes it |
+| Measured read rate | ~115 tx/s in the browser, 1.7× faster than playback consumes it |
 | Round trip | byte-for-byte identical to the encoded file |
+
+This copy was written with plain sequence numbers, not tickets: the account holds just over the
+base reserve, and every live ticket locks 0.2 XRP. Tickets are still the right tool — the numbers
+below are measured — but they need an account funded to hold them.
 
 ## What tickets changed
 
@@ -49,6 +55,8 @@ constraint: each transaction carries a `TicketSequence` instead of a sequence nu
 on its own. Order is still recoverable, because tickets are handed out consecutively — chunk *i*
 rides ticket *first + i* exactly as it used to ride *sequence + i*.
 
+Measured on testnet, where an account could be funded well past the reserve:
+
 | strategy | 200 transactions | rate | lost |
 |---|---|---|---|
 | sequence, serial | 74.3 s | 2.7 tx/s | 0 |
@@ -57,7 +65,12 @@ rides ticket *first + i* exactly as it used to ride *sequence + i*.
 
 An account may hold 250 live tickets and mint at most 250 per `TicketCreate`
 (`kMaxValidCount`, `kMaxTicketThreshold`), and each one holds 0.2 XRP of reserve until spent.
-So a long upload is a pipeline: mint a batch, spend it, mint the next.
+So a long upload is a pipeline: mint a batch, spend it, mint the next — and a batch of 200 needs
+40 XRP sitting on the account while it drains. That reserve, not the protocol, is what decided
+how this particular copy went up.
+
+The same clip took 42 seconds with tickets on testnet against 2.8 minutes with sequence numbers
+here: a 4× difference in wall-clock, and the difference between 5 ledgers and 44.
 
 ## Live streaming is close, but not there
 
@@ -141,8 +154,8 @@ run it with `--tickets`.
 
 - **iOS Safari before 17 has no MediaSource at all**, and 17+ exposes it only as
   `ManagedMediaSource`. The page checks support up front and says so rather than failing midway.
-- **A test network gets reset.** When that happens these transactions vanish and the player will
-  report it instead of showing a broken frame.
+- **The clip is on mainnet**, so it outlives test-network resets. An earlier copy was rehearsed on
+  testnet, which is where the ticket measurements come from.
 - **This is video-on-demand**, not broadcast — see above.
 - We have not found a public precedent for streaming video out of XRPL memos, but absence of a
   search result is not proof of a first. The numbers here are measured; that claim would not be.

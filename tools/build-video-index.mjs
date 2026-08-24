@@ -100,7 +100,7 @@ const manifest = {
     firstLedger: run.FirstLedger,
     lastLedger: run.LastLedger,
     ledgersUsed: run.LedgersUsed,
-    ticketed: true,
+    ticketed: run.Ticketed === true,   // how this copy was written, not how it could be
     submitMinutes: run.SubmitMinutes,
     feeDropsPerTx: run.FeeAvgDrops,
     feeBurnedXrp: run.FeeBurnedXrp,

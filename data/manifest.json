@@ -1,13 +1,14 @@
 {
-  "network": "XRPL Testnet",
-  "networkKey": "testnet",
+  "network": "XRPL Mainnet",
+  "networkKey": "mainnet",
   "endpoints": [
-    "wss://s.altnet.rippletest.net:51233",
-    "wss://testnet.xrpl-labs.com"
+    "wss://xrplcluster.com",
+    "wss://s2.ripple.com",
+    "wss://s1.ripple.com"
   ],
-  "explorer": "https://testnet.xrpl.org",
-  "account": "rU8KhYn2Vwpf3tzequSMiJQkhX9ZKwTN3L",
-  "accountUrl": "https://testnet.xrpl.org/accounts/rU8KhYn2Vwpf3tzequSMiJQkhX9ZKwTN3L",
+  "explorer": "https://livenet.xrpl.org",
+  "account": "rU1A1kuVpYHk3TZYWJxVtPUc94aXyteizy",
+  "accountUrl": "https://livenet.xrpl.org/accounts/rU1A1kuVpYHk3TZYWJxVtPUc94aXyteizy",
   "video": {
     "title": "I Love AI",
     "credit": "StaticBit, 2026",
@@ -23,15 +24,15 @@
   "ledger": {
     "chunkSize": 1019,
     "transactions": 625,
-    "startSequence": 20184071,
-    "firstLedger": 20184074,
-    "lastLedger": 20184086,
-    "ledgersUsed": 5,
-    "ticketed": true,
-    "submitMinutes": 0.7,
+    "startSequence": 106500426,
+    "firstLedger": 106514498,
+    "lastLedger": 106514541,
+    "ledgersUsed": 44,
+    "ticketed": false,
+    "submitMinutes": 2.84,
     "feeDropsPerTx": 12,
-    "feeBurnedXrp": 0.007548,
-    "readBackSeconds": 2.45,
+    "feeBurnedXrp": 0.0075,
+    "readBackSeconds": 15.6,
     "requiredTxPerSecond": 69.4
   },
   "verification": {
