@@ -231,7 +231,9 @@ function renderAbout() {
     fact('Clip', `${video.width}×${video.height}, ${video.durationSeconds}s, ${video.mimeCodec}`),
     fact('Transactions', `${ledger.transactions.toLocaleString('en-US')} — ${ledger.chunkSize} bytes of payload each`),
     fact('Ledgers used', `${ledger.ledgersUsed} — <a href="${state.manifest.explorer}/ledgers/${ledger.firstLedger}" target="_blank" rel="noopener">${ledger.firstLedger}</a> to <a href="${state.manifest.explorer}/ledgers/${ledger.lastLedger}" target="_blank" rel="noopener">${ledger.lastLedger}</a>`),
-    fact('Written with', `tickets, ${ledger.submitMinutes} minutes — sequence numbers would have taken far longer and dropped transactions`),
+    fact('Written with', ledger.ticketed
+      ? `tickets, ${ledger.submitMinutes} minutes — each transaction independent, none dropped`
+      : `sequence numbers, ${ledger.submitMinutes} minutes — tickets need 0.2 XRP of reserve each, which this account does not hold`),
     fact('Fees burned', `${ledger.feeBurnedXrp} XRP at ${ledger.feeDropsPerTx} drops each`),
     fact('Playback needs', `${ledger.requiredTxPerSecond} tx/s sustained`),
     fact('Round trip', verification.byteForByteMatch ? 'byte-for-byte identical to the encoded file' : 'MISMATCH'),
