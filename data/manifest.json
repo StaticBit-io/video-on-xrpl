@@ -1,0 +1,42 @@
+{
+  "network": "XRPL Testnet",
+  "networkKey": "testnet",
+  "endpoints": [
+    "wss://s.altnet.rippletest.net:51233",
+    "wss://testnet.xrpl-labs.com"
+  ],
+  "explorer": "https://testnet.xrpl.org",
+  "account": "rBVhQHqZXAY1t4Z4WyqJnWq948E5gXwMUB",
+  "accountUrl": "https://testnet.xrpl.org/accounts/rBVhQHqZXAY1t4Z4WyqJnWq948E5gXwMUB",
+  "video": {
+    "title": "Big Buck Bunny",
+    "credit": "Blender Foundation, CC BY 3.0",
+    "source": "test-videos.co.uk, re-encoded to 360p",
+    "mimeCodec": "video/mp4; codecs=\"avc1.4D401F\"",
+    "hasAudio": false,
+    "width": 640,
+    "height": 360,
+    "durationSeconds": 10,
+    "bytes": 704445,
+    "sha256": "D5514361DFC663FB95AF268B422CA6F3258A7F2147C231B21F60017784F77F70",
+    "segments": 10
+  },
+  "ledger": {
+    "chunkSize": 1019,
+    "transactions": 692,
+    "startSequence": 20182741,
+    "firstLedger": 20182746,
+    "lastLedger": 20182758,
+    "ledgersUsed": 5,
+    "ticketed": true,
+    "submitMinutes": 0,
+    "feeDropsPerTx": 12,
+    "feeBurnedXrp": 0,
+    "readBackSeconds": 2.42,
+    "requiredTxPerSecond": 69.2
+  },
+  "verification": {
+    "rebuiltBytes": 704445,
+    "byteForByteMatch": true
+  }
+}

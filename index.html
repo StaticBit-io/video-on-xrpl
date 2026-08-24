@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video streamed out of the XRP Ledger</title>
+<meta name="description" content="A video stored inside XRPL transaction memos, fetched fragment by fragment and fed to the decoder while it plays.">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🎞️</text></svg>">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <h1>Video, streamed out of the <span>XRP Ledger</span></h1>
+    <p class="tagline">Nothing is served from this site but an index. Every frame arrives as transaction memos and goes straight to the decoder.</p>
+  </div>
+  <div class="netbar">
+    <span class="net-dot" id="net-dot"></span>
+    <span id="net-status">idle</span>
+    <span class="net-sep">·</span>
+    <a id="net-account" href="#" target="_blank" rel="noopener">account</a>
+  </div>
+</header>
+
+<main>
+  <section class="stage">
+    <div class="player">
+      <video id="video" playsinline muted controls></video>
+      <div class="overlay" id="overlay">
+        <button class="start" id="start">Stream from the ledger</button>
+        <p class="overlay-note" id="overlay-note"></p>
+      </div>
+    </div>
+
+    <div class="gauges">
+      <div class="gauge">
+        <span class="gauge-value" id="g-buffer">0.0s</span>
+        <span class="gauge-label">buffered ahead</span>
+      </div>
+      <div class="gauge">
+        <span class="gauge-value" id="g-rate">—</span>
+        <span class="gauge-label">read rate</span>
+      </div>
+      <div class="gauge">
+        <span class="gauge-value" id="g-tx">0</span>
+        <span class="gauge-label">transactions fetched</span>
+      </div>
+      <div class="gauge">
+        <span class="gauge-value" id="g-bytes">0 KB</span>
+        <span class="gauge-label">pulled from ledger</span>
+      </div>
+    </div>
+
+    <div class="race" id="race" hidden>
+      <div class="race-bar"><span id="race-fill"></span></div>
+      <p class="race-note" id="race-note"></p>
+    </div>
+  </section>
+
+  <section class="segments">
+    <h2>Fragments <span class="hint" id="segments-hint"></span></h2>
+    <ol class="segment-list" id="segment-list"></ol>
+  </section>
+
+  <section class="about">
+    <h2>What is happening</h2>
+    <p class="lede" id="about-lede"></p>
+
+    <ol class="steps">
+      <li>The index gives a fragment's byte range — never its bytes.</li>
+      <li>That range maps to a run of transactions, each holding <span id="chunk-size">1019</span> bytes of memo.</li>
+      <li>The browser pulls them from a public node by hash, in parallel.</li>
+      <li>Payloads are concatenated, trimmed, and checked against SHA-256.</li>
+      <li>The fragment goes into a <code>SourceBuffer</code>, and the decoder plays it.</li>
+    </ol>
+
+    <h2>The numbers</h2>
+    <table class="facts" id="facts"></table>
+
+    <p class="footnote" id="credit"></p>
+  </section>
+</main>
+
+<script type="module" src="js/app.mjs"></script>
+</body>
+</html>

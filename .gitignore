@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+
+# The video itself never belongs in the repository — it lives in the ledger.
+# This is the staging copy used while building the index and testing playback.
+*.bin
+*.mp4
+payload-map.json
