@@ -68,6 +68,19 @@ html { scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
 }
 
 .netbar a { color: var(--ink-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.net-node { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+.net-node select {
+  font: inherit;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+  cursor: pointer;
+}
 .net-sep { opacity: 0.5; }
 
 .net-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); flex: none; }

@@ -2,6 +2,7 @@
  * Drives playback: keeps the decoder a few seconds ahead of the playhead by pulling
  * fragments out of the ledger, and shows the race between the two as it happens.
  */
+import { ChunkStore } from './chunks.mjs';
 import { LedgerClient } from './ledger.mjs';
 import { fragmentAt, nextFragment } from './schedule.mjs';
 import { fetchPiece } from './segments.mjs';
@@ -20,6 +21,7 @@ const state = {
   segments: null,
   hashes: [],
   client: null,
+  store: null,
   streamer: null,
   fetched: { transactions: 0, bytes: 0, seconds: 0 },
   started: false,
@@ -61,6 +63,11 @@ async function start() {
   $('video').muted = !state.manifest.video.hasAudio;
 
   state.client = new LedgerClient(state.manifest.endpoints, renderNetStatus);
+  state.client.endpointIndex = Number($('net-endpoint').value) || 0;
+  state.store = new ChunkStore(state.client, {
+    account: state.manifest.account,
+    firstLedger: state.manifest.ledger.firstLedger,
+  });
   state.streamer = new Streamer($('video'), state.manifest.video.mimeCodec, state.manifest.video.durationSeconds);
   await state.streamer.open();
 
@@ -144,10 +151,11 @@ async function pull(piece, label) {
   renderNetStatus({ endpoint: state.client.endpoint, status: 'connected' });
   $('net-status').textContent = `fetching ${label} — ${piece.transactions} transactions`;
 
-  const result = await fetchPiece(piece, state.hashes, state.client, state.manifest.ledger.chunkSize);
+  const result = await fetchPiece(piece, state.store, state.manifest.ledger.chunkSize);
   await state.streamer.append(result.bytes);
 
-  state.fetched.transactions += result.sources.length;
+  state.fetched.transactions += result.transactions;
+  $('net-cost').textContent = `${state.store.messages} request${state.store.messages === 1 ? '' : 's'}`;
   state.fetched.bytes += result.bytes.length;
   state.fetched.seconds += result.seconds;
 
@@ -207,6 +215,23 @@ function renderChrome() {
   $('net-account').href = state.manifest.accountUrl;
   $('net-account').textContent = state.manifest.account;
   $('net-status').textContent = 'ready';
+
+  // Public nodes rate-limit per IP, so the viewer needs a way out when one refuses.
+  const select = $('net-endpoint');
+  select.innerHTML = state.manifest.endpoints
+    .map((url, i) => `<option value="${i}">${url.replace('wss://', '')}</option>`)
+    .join('');
+
+  select.addEventListener('change', async () => {
+    const index = Number(select.value);
+    if (!state.client) return;                       // not streaming yet — the choice applies on start
+    try {
+      await state.client.useEndpoint(index);
+      $('net-status').textContent = `switched to ${state.client.endpoint}`;
+    } catch (error) {
+      $('net-status').textContent = `cannot reach ${state.manifest.endpoints[index]}`;
+    }
+  });
 }
 
 function renderNetStatus({ endpoint, status }) {
@@ -245,10 +270,15 @@ const txUrl = (chunk) => `${state.manifest.explorer}/transactions/${state.hashes
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function showFailure(error) {
+  const rateLimited = /too much load|rate|limit|slow down/i.test(error.message);
+
   $('overlay').hidden = false;
   $('start').hidden = true;
   $('overlay-note').innerHTML =
-    `<strong>Streaming stopped.</strong><br>${escapeHtml(error.message)}`;
+    `<strong>Streaming stopped.</strong><br>${escapeHtml(error.message)}` +
+    (rateLimited
+      ? '<br><br>That node is rate-limiting this address. Pick another one in the header and press play again.'
+      : '');
   $('net-status').textContent = 'stopped';
 }
 

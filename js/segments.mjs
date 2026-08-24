@@ -12,23 +12,18 @@ export async function sha256Hex(bytes) {
 
 /**
  * @param {object} piece entry from segments.json (init or a segment)
- * @param {string[]} hashes every transaction hash, in ticket order
- * @param {import('./ledger.mjs').LedgerClient} client
+ * @param {import('./chunks.mjs').ChunkStore} store batched reader over the clip's transactions
  * @param {number} chunkSize payload bytes per transaction
  * @param {(done: number, total: number) => void} [onProgress]
  * @returns {Promise<{bytes: Uint8Array, sources: object[], verified: boolean, digest: string, seconds: number}>}
  */
-export async function fetchPiece(piece, hashes, client, chunkSize, onProgress) {
-  const wanted = hashes.slice(piece.firstChunk, piece.lastChunk + 1);
-  if (wanted.length !== piece.lastChunk - piece.firstChunk + 1) {
-    throw new Error(`index is short: this piece needs chunks ${piece.firstChunk}..${piece.lastChunk}`);
-  }
-
+export async function fetchPiece(piece, store, chunkSize, onProgress) {
   const startedAt = performance.now();
-  const chunks = await client.fetchChunks(wanted, onProgress);
+  await store.ensure(piece.lastChunk, onProgress);
   const seconds = (performance.now() - startedAt) / 1000;
 
-  const bytes = assembleRange(chunks.map((c) => c.bytes), piece.byteStart, piece.byteEnd, chunkSize);
+  const chunks = store.slice(piece.firstChunk, piece.lastChunk);
+  const bytes = assembleRange(chunks, piece.byteStart, piece.byteEnd, chunkSize);
   const digest = await sha256Hex(bytes);
 
   // A damaged fragment would surface as a decoder error much later, where it looks like a
@@ -37,17 +32,14 @@ export async function fetchPiece(piece, hashes, client, chunkSize, onProgress) {
     throw new Error(`checksum mismatch on bytes ${piece.byteStart}..${piece.byteEnd}: the ledger returned different data than the index expects`);
   }
 
+  const transactions = piece.lastChunk - piece.firstChunk + 1;
   return {
     bytes,
     digest,
     verified: true,
     seconds,
-    txPerSecond: wanted.length / Math.max(seconds, 0.001),
-    sources: chunks.map((chunk, i) => ({
-      index: piece.firstChunk + i,
-      hash: wanted[i],
-      ledger: chunk.tx.ledger_index,
-      bytes: chunk.bytes.length,
-    })),
+    transactions,
+    txPerSecond: transactions / Math.max(seconds, 0.001),
+    sources: store.sources(piece.firstChunk, piece.lastChunk),
   };
 }
