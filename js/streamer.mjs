@@ -19,8 +19,9 @@ export class Streamer {
   /**
    * @param {HTMLVideoElement} video
    * @param {string} mimeCodec e.g. video/mp4; codecs="avc1.4D401F"
+   * @param {number} [durationSeconds] total length, known from the index before any byte arrives
    */
-  constructor(video, mimeCodec) {
+  constructor(video, mimeCodec, durationSeconds = 0) {
     if (!('MediaSource' in window)) {
       throw new StreamerError('this browser has no MediaSource — streaming from the ledger needs it');
     }
@@ -30,6 +31,7 @@ export class Streamer {
 
     this.video = video;
     this.mimeCodec = mimeCodec;
+    this.durationSeconds = durationSeconds;
     this.mediaSource = new MediaSource();
     this.sourceBuffer = null;
     this.queue = Promise.resolve();
@@ -46,7 +48,16 @@ export class Streamer {
     });
 
     this.sourceBuffer = this.mediaSource.addSourceBuffer(this.mimeCodec);
-    this.sourceBuffer.mode = 'sequence';
+
+    // 'segments' honours each fragment's own timestamps, so fragments may be appended out of
+    // order — which is what a seek does. 'sequence' would stack them back to back and put a
+    // fragment fetched after a jump in the wrong place on the timeline.
+    this.sourceBuffer.mode = 'segments';
+
+    // Declaring the duration up front makes the whole timeline seekable immediately. Without
+    // it `seekable` is only what has been buffered, so a jump past the loaded part snaps back
+    // instead of asking for the fragment that covers it.
+    if (this.durationSeconds > 0) this.mediaSource.duration = this.durationSeconds;
   }
 
   /**
@@ -80,6 +91,16 @@ export class Streamer {
     }));
 
     return this.queue;
+  }
+
+  /** True when the given moment already sits in the buffer. */
+  hasTime(seconds) {
+    const buffered = this.sourceBuffer?.buffered;
+    if (!buffered?.length) return false;
+    for (let i = 0; i < buffered.length; i++) {
+      if (seconds >= buffered.start(i) - 0.05 && seconds < buffered.end(i)) return true;
+    }
+    return false;
   }
 
   /** Seconds of media buffered ahead of the playhead. */

@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "node --test test/offsets.test.mjs test/mp4.test.mjs",
+    "test": "node --test test/offsets.test.mjs test/mp4.test.mjs test/schedule.test.mjs",
     "serve": "npx --yes serve -l 4174 ."
   },
   "license": "MIT"

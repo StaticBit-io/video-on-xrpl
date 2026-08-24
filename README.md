@@ -70,6 +70,23 @@ Fragments must reach the decoder in order, so the loop is sequential — but it 
 seconds ahead of the playhead rather than downloading everything, which is what makes this a
 stream rather than a slow download.
 
+## Pause, seek, replay
+
+The clip behaves like a normal video, which took three things beyond simply appending bytes.
+
+The duration is declared to MediaSource **before the first fragment arrives**, taken from the
+index. Without that, `seekable` is only what has been buffered so far, and a jump past the loaded
+part silently snaps back to the end of the buffer instead of loading what was asked for.
+
+The SourceBuffer runs in `segments` mode rather than `sequence`, so fragments carry their own
+timestamps and may be appended out of order — which is exactly what a seek produces.
+
+The fetch loop picks the next fragment from **where the playhead is**, not from file order
+(`js/schedule.mjs`). Seek to 0:08 with only the first seconds loaded and the loop fetches the
+fragment covering 0:08 next, then continues forward, and only afterwards goes back to fill the
+skipped stretch. Once everything is buffered, replaying and scrubbing touch the network not at
+all — the ledger has already handed over every byte.
+
 ## Running locally
 
 ```bash

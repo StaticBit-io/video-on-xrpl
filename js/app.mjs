@@ -3,6 +3,7 @@
  * fragments out of the ledger, and shows the race between the two as it happens.
  */
 import { LedgerClient } from './ledger.mjs';
+import { fragmentAt, nextFragment } from './schedule.mjs';
 import { fetchPiece } from './segments.mjs';
 import { Streamer } from './streamer.mjs';
 
@@ -22,6 +23,8 @@ const state = {
   streamer: null,
   fetched: { transactions: 0, bytes: 0, seconds: 0 },
   started: false,
+  loaded: new Set(),      // indices already in the SourceBuffer
+  complete: false,
 };
 
 async function boot() {
@@ -51,18 +54,33 @@ async function start() {
   $('overlay').hidden = true;
 
   state.client = new LedgerClient(state.manifest.endpoints, renderNetStatus);
-  state.streamer = new Streamer($('video'), state.manifest.video.mimeCodec);
+  state.streamer = new Streamer($('video'), state.manifest.video.mimeCodec, state.manifest.video.durationSeconds);
   await state.streamer.open();
 
   const video = $('video');
   video.addEventListener('timeupdate', renderGauges);
   video.addEventListener('progress', renderGauges);
 
+  // A seek into an un-fetched stretch is not an error — it just tells the loop where to
+  // work next. The loop re-reads the playhead on every pass, so nothing more is needed here.
+  video.addEventListener('seeking', () => {
+    if (!state.complete) $('net-status').textContent = `seeking to ${video.currentTime.toFixed(1)}s — fetching what covers it`;
+    renderGauges();
+  });
+
   try {
     await pump();
   } catch (error) {
     showFailure(error);
   }
+}
+
+/** The fragment to fetch next, chosen from where the viewer actually is. See schedule.mjs. */
+function pickNext() {
+  const { segments } = state.segments;
+  const under = fragmentAt($('video').currentTime, segments[0].durationSeconds, segments.length);
+  const index = nextFragment(state.loaded, segments.length, under);
+  return index === null ? null : segments[index];
 }
 
 /**
@@ -74,17 +92,20 @@ async function pump() {
   const video = $('video');
 
   await pull(init, 'init');
-  markSegment(-1, 'done');
 
-  for (const segment of segments) {
+  while (state.loaded.size < segments.length) {
+    const segment = pickNext();
+    if (!segment) break;
+
     // Hold back while the buffer is full, so this streams rather than downloads. Two guards
     // keep that from becoming a deadlock: a paused video never drains its buffer (autoplay
     // refused, a hidden tab, or the viewer simply pressed pause), and even while playing the
     // wait is capped so a stalled decoder cannot freeze the fetch loop for good.
     const waitUntil = Date.now() + MAX_HOLD_MS;
     while (state.started
-           && segment.index > 1
+           && state.loaded.size > 1
            && !video.paused
+           && state.streamer.hasTime(video.currentTime)
            && state.streamer.bufferedAhead() > TARGET_BUFFER_SECONDS
            && Date.now() < waitUntil) {
       await sleep(120);
@@ -92,17 +113,24 @@ async function pump() {
 
     markSegment(segment.index, 'fetching');
     await pull(segment, `fragment ${segment.index}`);
+    state.loaded.add(segment.index);
     markSegment(segment.index, 'done');
 
-    if (video.paused && video.readyState >= 2) {
+    // Only autoplay the very first time; after that the viewer owns the play state.
+    if (video.paused && video.readyState >= 2 && state.loaded.size <= 2 && video.currentTime === 0) {
       video.play().catch(() => { /* autoplay policy: the controls are there */ });
     }
     renderGauges();
   }
 
   await state.streamer.end();
+  state.complete = true;
   renderGauges();
-  $('race-note').textContent = 'Every fragment came out of the ledger. Playback continues from the buffer.';
+
+  $('net-status').textContent = 'whole clip buffered — replay and seek work offline now';
+  $('race-note').textContent =
+    'Every fragment came out of the ledger. The clip is now fully buffered, so replaying or ' +
+    'scrubbing costs nothing more.';
 }
 
 async function pull(piece, label) {

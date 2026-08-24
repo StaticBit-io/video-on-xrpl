@@ -56,8 +56,17 @@ const ENDPOINTS = {
 };
 const networkKey = run.Network.toLowerCase().includes('test') ? 'testnet' : 'mainnet';
 
-const segments = map.segments.map(withRange);
-const durationSeconds = map.durationSeconds || segments.length;   // fragments are ~1 s each
+const rawSegments = map.segments.map(withRange);
+const durationSeconds = map.durationSeconds || rawSegments.length;   // fragments are ~1 s each
+
+// Fragments were encoded at a fixed duration, so playback time maps to an index by division.
+// Seeking needs this: it has to know which fragment covers the moment the viewer jumped to.
+const segmentSeconds = durationSeconds / rawSegments.length;
+const segments = rawSegments.map((s) => ({
+  ...s,
+  startSeconds: Math.round(s.index * segmentSeconds * 1000) / 1000,
+  durationSeconds: Math.round(segmentSeconds * 1000) / 1000,
+}));
 
 const manifest = {
   network: run.Network,
