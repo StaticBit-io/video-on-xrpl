@@ -166,6 +166,19 @@ run it with `--tickets`.
 - We have not found a public precedent for streaming video out of XRPL memos, but absence of a
   search result is not proof of a first. The numbers here are measured; that claim would not be.
 
+## Preview image
+
+`preview.jpg` is the 1200x630 card Telegram, X and the rest show when this page is shared. Every
+figure on it is read from `data/manifest.json` at generation time, so the card cannot drift away
+from what the page says. Regenerate it after a re-upload:
+
+```bash
+python tools/build-preview.py
+```
+
+Needs [Pillow](https://pypi.org/project/pillow/) (`pip install pillow`). The site itself has no
+dependencies; this is build-time only.
+
 ## Credits
 
 *I Love AI* — StaticBit, 2026. Site code: MIT.
