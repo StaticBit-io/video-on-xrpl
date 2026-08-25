@@ -20,6 +20,12 @@ It is not. This clip is in the ledger right now, at the 1 KB limit, and it plays
 never the size of a memo — it was how fast you can write, and that turned out to be a solved
 problem once transactions stopped waiting for each other.
 
+The part of that debate nobody is measuring is price. Today a gigabyte of memo payload costs about
+12.6 XRP — not because bytes are priced, but because the 1 KB cap forces a whole transaction per
+kilobyte. Raise the cap to 1.3 MB and the same gigabyte costs 0.0099 XRP, a factor of ~1,275, with
+no change to the fee schedule at all. The numbers are in
+[cost-of-data-on-xrpl](https://github.com/StaticBit-io/cost-of-data-on-xrpl).
+
 ## The numbers
 
 | | |
